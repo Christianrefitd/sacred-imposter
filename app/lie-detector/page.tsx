@@ -11,6 +11,7 @@ import { getPrompts } from "@/lib/prompts";
 import { PlayerSetup } from "@/components/game/player-setup";
 import { RoleReveal } from "@/components/lie-detector/role-reveal";
 import { Storytelling } from "@/components/lie-detector/storytelling";
+import { Voting } from "@/components/lie-detector/voting";
 import { cn } from "@/lib/utils";
 
 export default function LieDetectorPage() {
@@ -121,7 +122,7 @@ export default function LieDetectorPage() {
       break;
     case "voting":
     case "vote-complete":
-      content = <p className="p-8 text-center text-muted-foreground">Voting — coming next</p>;
+      content = <Voting state={state} dispatch={dispatch} questions={questionsRef.current} />;
       break;
     case "caught":
     case "fooled":
