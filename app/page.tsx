@@ -1,23 +1,42 @@
-import { Settings } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getPlayers, savePlayers, getWords } from "@/lib/storage";
+import { PlayerSetup } from "@/components/game/player-setup";
 
 export default function Home() {
+  const router = useRouter();
+  const [players, setPlayers] = useState<string[]>([]);
+  const [wordCount, setWordCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setPlayers(getPlayers());
+    setWordCount(getWords().length);
+    setMounted(true);
+  }, []);
+
+  function handlePlayersChange(updated: string[]) {
+    setPlayers(updated);
+    savePlayers(updated);
+  }
+
+  function handleStartGame() {
+    savePlayers(players);
+    router.push("/imposter");
+  }
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6">
-      <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-        SACRED IMPOSTER
-      </h1>
-      <p className="text-muted-foreground text-lg">
-        A game of sacred deception
-      </p>
-      <div className="flex flex-col items-center gap-4">
-        <button className="rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90 active:bg-primary/80">
-          Start Game
-        </button>
-        <button className="rounded-full p-3 text-muted-foreground transition-colors hover:bg-card hover:text-foreground">
-          <Settings className="h-6 w-6" />
-          <span className="sr-only">Settings</span>
-        </button>
-      </div>
-    </div>
+    <PlayerSetup
+      players={players}
+      onPlayersChange={handlePlayersChange}
+      wordCount={wordCount}
+      onStartGame={handleStartGame}
+    />
   );
 }
