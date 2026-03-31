@@ -5,13 +5,13 @@ import { SerwistProvider } from "./serwist";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sacred Imposter",
-  description: "Recovery-themed social deduction game",
-  applicationName: "Sacred Imposter",
+  title: "Recovery Circle",
+  description: "Recovery-themed party games for Sacred Journey",
+  applicationName: "Recovery Circle",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Sacred Imposter",
+    title: "Recovery Circle",
   },
 };
 
