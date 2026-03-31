@@ -9,6 +9,7 @@ import {
 import { getPlayers, savePlayers, getVulnerabilityQuestions } from "@/lib/storage";
 import { getPrompts } from "@/lib/prompts";
 import { PlayerSetup } from "@/components/game/player-setup";
+import { RoleReveal } from "@/components/lie-detector/role-reveal";
 import { cn } from "@/lib/utils";
 
 export default function LieDetectorPage() {
@@ -112,7 +113,7 @@ export default function LieDetectorPage() {
   switch (state.phase) {
     case "role-reveal":
     case "role-shown":
-      content = <p className="p-8 text-center text-muted-foreground">Role Reveal — coming next</p>;
+      content = <RoleReveal state={state} dispatch={dispatch} />;
       break;
     case "storytelling":
       content = <p className="p-8 text-center text-muted-foreground">Storytelling — coming next</p>;
