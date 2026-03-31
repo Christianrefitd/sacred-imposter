@@ -12,6 +12,7 @@ import { PlayerSetup } from "@/components/game/player-setup";
 import { RoleReveal } from "@/components/lie-detector/role-reveal";
 import { Storytelling } from "@/components/lie-detector/storytelling";
 import { Voting } from "@/components/lie-detector/voting";
+import { Results } from "@/components/lie-detector/results";
 import { cn } from "@/lib/utils";
 
 export default function LieDetectorPage() {
@@ -127,7 +128,15 @@ export default function LieDetectorPage() {
     case "caught":
     case "fooled":
     case "pick-player":
-      content = <p className="p-8 text-center text-muted-foreground">Results — coming next</p>;
+      content = (
+        <Results
+          state={state}
+          dispatch={dispatch}
+          prompts={promptsRef.current}
+          questions={questionsRef.current}
+          promptMode={promptMode}
+        />
+      );
       break;
   }
 
