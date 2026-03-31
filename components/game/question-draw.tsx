@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { GameState, GameAction } from "@/lib/game-reducer";
+import { Button } from "@/components/ui/button";
 
 interface GameComponentProps {
   state: GameState;
@@ -11,7 +12,7 @@ interface GameComponentProps {
 
 function QuestionCard({ question }: { question: string }) {
   return (
-    <div className="w-full rounded-xl border border-white/10 bg-[#1a1a1a] p-6">
+    <div className="w-full rounded-xl border border-border bg-card p-6">
       <p className="text-lg leading-relaxed text-white">{question}</p>
     </div>
   );
@@ -29,7 +30,7 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
       <div className="flex min-h-screen items-center justify-center px-4 text-white">
         <div className="flex w-full max-w-md flex-col items-center gap-6">
           <h1 className="text-2xl font-bold">
-            <span className="text-red-500">{imposterName}</span> was caught!
+            <span className="text-destructive">{imposterName}</span> was caught!
           </h1>
 
           <p className="text-sm text-white/70">
@@ -38,20 +39,24 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
 
           <QuestionCard question={state.drawnQuestion} />
 
-          <button
+          <Button
             onClick={() => dispatch({ type: "DRAW_QUESTION" })}
             disabled={state.reDrawUsed}
-            className="w-full min-h-[44px] rounded-2xl border border-white/10 bg-[#1a1a1a] py-3 text-base font-medium text-white transition-opacity disabled:opacity-40"
+            variant="outline"
+            size="lg"
+            className="w-full min-h-[44px] rounded-2xl text-base font-medium"
           >
             Draw Again
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => dispatch({ type: "NEW_ROUND", words })}
-            className="h-14 w-full rounded-2xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
+            variant="default"
+            size="lg"
+            className="h-14 w-full rounded-2xl text-base font-semibold"
           >
             New Round
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -65,7 +70,7 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
       <div className="flex min-h-screen items-center justify-center px-4 text-white">
         <div className="flex w-full max-w-md flex-col items-center gap-6">
           <h1 className="text-2xl font-bold">
-            <span className="text-red-500">{imposterName}</span> escaped!
+            <span className="text-destructive">{imposterName}</span> escaped!
           </h1>
 
           <p className="text-sm text-white/70">
@@ -74,20 +79,24 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
 
           <QuestionCard question={state.drawnQuestion} />
 
-          <button
+          <Button
             onClick={() => dispatch({ type: "DRAW_QUESTION" })}
             disabled={state.reDrawUsed}
-            className="w-full min-h-[44px] rounded-2xl border border-white/10 bg-[#1a1a1a] py-3 text-base font-medium text-white transition-opacity disabled:opacity-40"
+            variant="outline"
+            size="lg"
+            className="w-full min-h-[44px] rounded-2xl text-base font-medium"
           >
             Draw Again
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => dispatch({ type: "PICK_PLAYER" })}
-            className="h-14 w-full rounded-2xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
+            variant="default"
+            size="lg"
+            className="h-14 w-full rounded-2xl text-base font-semibold"
           >
             Choose Who Answers
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -112,15 +121,17 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
 
             <QuestionCard question={state.drawnQuestion} />
 
-            <button
+            <Button
               onClick={() => {
                 setSelectedPlayer(null);
                 dispatch({ type: "NEW_ROUND", words });
               }}
-              className="h-14 w-full rounded-2xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
+              variant="default"
+              size="lg"
+              className="h-14 w-full rounded-2xl text-base font-semibold"
             >
               New Round
-            </button>
+            </Button>
           </div>
         </div>
       );
@@ -136,13 +147,15 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
 
           <div className="flex w-full flex-col gap-3">
             {otherPlayers.map((name) => (
-              <button
+              <Button
                 key={name}
                 onClick={() => setSelectedPlayer(name)}
-                className="h-12 w-full rounded-2xl bg-[#1a1a1a] text-base font-medium text-white transition-colors hover:bg-[#252525]"
+                variant="ghost"
+                size="lg"
+                className="h-12 w-full rounded-2xl bg-card text-base font-medium hover:bg-muted/80"
               >
                 {name}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

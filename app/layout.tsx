@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SerwistProvider } from "./serwist";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Sacred Imposter",
-  description: "A social deduction game",
+  description: "Recovery-themed social deduction game",
+  applicationName: "Sacred Imposter",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Sacred Imposter",
+  },
 };
 
 export const viewport: Viewport = {
@@ -35,7 +42,9 @@ export default function RootLayout({
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <SerwistProvider swUrl="/serwist/sw.js">
+          {children}
+        </SerwistProvider>
       </body>
     </html>
   );
