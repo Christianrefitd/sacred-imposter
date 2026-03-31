@@ -81,7 +81,7 @@ export default function SettingsPage() {
       <div className="relative flex items-center justify-center">
         <Link
           href="/"
-          className="absolute left-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+          className="absolute left-0 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
         >
           <ArrowLeft className="h-6 w-6" />
           <span className="sr-only">Back to home</span>
@@ -145,10 +145,10 @@ export default function SettingsPage() {
               <button
                 onClick={() => removeWord(index)}
                 disabled={isLastWord}
-                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive disabled:pointer-events-none disabled:opacity-30"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive disabled:pointer-events-none disabled:opacity-30"
                 aria-label={`Remove ${word}`}
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </li>
           ))}

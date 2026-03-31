@@ -31,7 +31,7 @@ export function CardReveal({ state, dispatch }: GameComponentProps) {
         {/* Cancel button — top-left */}
         <button
           onClick={handleCancel}
-          className="absolute left-4 top-4 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="absolute left-2 top-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground min-h-[44px] min-w-[44px]"
         >
           Cancel Game
         </button>
@@ -71,7 +71,7 @@ export function CardReveal({ state, dispatch }: GameComponentProps) {
       {/* Cancel button — top-left */}
       <button
         onClick={handleCancel}
-        className="absolute left-4 top-4 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        className="absolute left-2 top-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground min-h-[44px] min-w-[44px]"
       >
         Cancel Game
       </button>

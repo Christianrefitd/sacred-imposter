@@ -22,7 +22,7 @@ export function Reveal({ state, dispatch }: GameComponentProps) {
 
           <button
             onClick={() => setRevealed(true)}
-            className="w-full h-16 rounded-lg bg-destructive text-white text-xl font-bold active:scale-95 transition-transform"
+            className="w-full h-16 rounded-2xl bg-destructive text-white text-xl font-bold active:scale-95 transition-transform"
           >
             Tap to Reveal the Imposter
           </button>
@@ -50,13 +50,13 @@ export function Reveal({ state, dispatch }: GameComponentProps) {
         <div className="flex flex-col gap-3 w-full mt-4">
           <button
             onClick={() => dispatch({ type: "CAUGHT" })}
-            className="w-full h-14 rounded-lg bg-primary text-primary-foreground text-lg font-semibold active:bg-primary/80 transition-colors"
+            className="w-full h-14 rounded-2xl bg-primary text-primary-foreground text-lg font-semibold active:bg-primary/80 transition-colors"
           >
             Caught!
           </button>
           <button
             onClick={() => dispatch({ type: "ESCAPED" })}
-            className="w-full h-14 rounded-lg border border-destructive text-destructive text-lg font-semibold active:bg-destructive/10 transition-colors"
+            className="w-full h-14 rounded-2xl border border-destructive text-destructive text-lg font-semibold active:bg-destructive/10 transition-colors"
           >
             Escaped!
           </button>

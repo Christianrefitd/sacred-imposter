@@ -26,7 +26,7 @@ export function Discussion({ state, dispatch }: GameComponentProps) {
 
         <button
           onClick={() => dispatch({ type: "SHOW_REVEAL" })}
-          className="w-full h-14 rounded-lg bg-purple-600 text-white text-lg font-semibold active:bg-purple-700 transition-colors mt-auto"
+          className="w-full h-14 rounded-2xl bg-purple-600 text-white text-lg font-semibold active:bg-purple-700 transition-colors mt-auto"
         >
           Done — Reveal Imposter
         </button>

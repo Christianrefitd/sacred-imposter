@@ -41,14 +41,14 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
           <button
             onClick={() => dispatch({ type: "DRAW_QUESTION" })}
             disabled={state.reDrawUsed}
-            className="w-full rounded-xl border border-white/10 bg-[#1a1a1a] py-3 text-base font-medium text-white transition-opacity disabled:opacity-40"
+            className="w-full min-h-[44px] rounded-2xl border border-white/10 bg-[#1a1a1a] py-3 text-base font-medium text-white transition-opacity disabled:opacity-40"
           >
             Draw Again
           </button>
 
           <button
             onClick={() => dispatch({ type: "NEW_ROUND", words })}
-            className="h-14 w-full rounded-xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
+            className="h-14 w-full rounded-2xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
           >
             New Round
           </button>
@@ -77,14 +77,14 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
           <button
             onClick={() => dispatch({ type: "DRAW_QUESTION" })}
             disabled={state.reDrawUsed}
-            className="w-full rounded-xl border border-white/10 bg-[#1a1a1a] py-3 text-base font-medium text-white transition-opacity disabled:opacity-40"
+            className="w-full min-h-[44px] rounded-2xl border border-white/10 bg-[#1a1a1a] py-3 text-base font-medium text-white transition-opacity disabled:opacity-40"
           >
             Draw Again
           </button>
 
           <button
             onClick={() => dispatch({ type: "PICK_PLAYER" })}
-            className="h-14 w-full rounded-xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
+            className="h-14 w-full rounded-2xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
           >
             Choose Who Answers
           </button>
@@ -117,7 +117,7 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
                 setSelectedPlayer(null);
                 dispatch({ type: "NEW_ROUND", words });
               }}
-              className="h-14 w-full rounded-xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
+              className="h-14 w-full rounded-2xl bg-purple-600 text-base font-semibold text-white transition-colors hover:bg-purple-500"
             >
               New Round
             </button>
@@ -139,7 +139,7 @@ export function QuestionDraw({ state, dispatch, words }: GameComponentProps) {
               <button
                 key={name}
                 onClick={() => setSelectedPlayer(name)}
-                className="h-12 w-full rounded-xl bg-[#1a1a1a] text-base font-medium text-white transition-colors hover:bg-[#252525]"
+                className="h-12 w-full rounded-2xl bg-[#1a1a1a] text-base font-medium text-white transition-colors hover:bg-[#252525]"
               >
                 {name}
               </button>

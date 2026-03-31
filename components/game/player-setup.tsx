@@ -76,7 +76,7 @@ export function PlayerSetup({
         </h1>
         <Link
           href="/settings"
-          className="absolute right-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+          className="absolute right-0 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
         >
           <Settings className="h-6 w-6" />
           <span className="sr-only">Settings</span>
@@ -111,10 +111,10 @@ export function PlayerSetup({
                 </span>
                 <button
                   onClick={() => removePlayer(index)}
-                  className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive"
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive"
                   aria-label={`Remove ${player}`}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </li>
             ))}

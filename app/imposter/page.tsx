@@ -44,20 +44,40 @@ export default function ImposterPage() {
     words: wordsRef.current,
   };
 
+  // Determine a transition key that changes when the visual phase changes.
+  // card-reveal and word-shown share a component, so they use one key.
+  // escaped and pick-player share QuestionDraw, so keep the same key.
+  const phaseKey =
+    state.phase === "word-shown"
+      ? "card-reveal"
+      : state.phase === "pick-player"
+        ? "escaped"
+        : state.phase;
+
+  let content: React.ReactNode = null;
   switch (state.phase) {
     case "card-reveal":
     case "word-shown":
-      return <CardReveal {...props} />;
+      content = <CardReveal {...props} />;
+      break;
     case "discussion":
-      return <Discussion {...props} />;
+      content = <Discussion {...props} />;
+      break;
     case "reveal":
-      return <Reveal {...props} />;
+      content = <Reveal {...props} />;
+      break;
     case "caught":
-      return <QuestionDraw {...props} />;
+      content = <QuestionDraw {...props} />;
+      break;
     case "escaped":
     case "pick-player":
-      return <QuestionDraw {...props} />;
-    default:
-      return null;
+      content = <QuestionDraw {...props} />;
+      break;
   }
+
+  return (
+    <div key={phaseKey} className="animate-fade-in">
+      {content}
+    </div>
+  );
 }
