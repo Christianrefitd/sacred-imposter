@@ -1,41 +1,71 @@
 "use client";
 
 import { useEffect, useReducer, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   gameReducer,
   createInitialState,
-  GameState,
-  GameAction,
 } from "@/lib/game-reducer";
-import { getPlayers, getWords } from "@/lib/storage";
+import { getPlayers, savePlayers, getWords } from "@/lib/storage";
+import { PlayerSetup } from "@/components/game/player-setup";
 import { CardReveal } from "@/components/game/card-reveal";
 import { Discussion } from "@/components/game/discussion";
 import { Reveal } from "@/components/game/reveal";
 import { QuestionDraw } from "@/components/game/question-draw";
 
 export default function ImposterPage() {
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [setupComplete, setSetupComplete] = useState(false);
+  const [players, setPlayers] = useState<string[]>([]);
+  const [wordCount, setWordCount] = useState(0);
   const wordsRef = useRef<string[]>([]);
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
 
   useEffect(() => {
-    const players = getPlayers();
-    if (!players || players.length < 3) {
-      router.replace("/");
-      return;
-    }
-
+    setPlayers(getPlayers());
     const words = getWords();
     wordsRef.current = words;
-
-    dispatch({ type: "START_GAME", players, words });
+    setWordCount(words.length);
     setMounted(true);
-  }, [router]);
+  }, []);
+
+  function handlePlayersChange(updated: string[]) {
+    setPlayers(updated);
+    savePlayers(updated);
+  }
+
+  function handleStartGame() {
+    savePlayers(players);
+    const words = getWords();
+    wordsRef.current = words;
+    dispatch({ type: "START_GAME", players, words });
+    setSetupComplete(true);
+  }
 
   if (!mounted) {
     return null;
+  }
+
+  if (!setupComplete) {
+    const canStart = players.length >= 3 && wordCount > 0;
+    const disabledReason = wordCount === 0
+      ? "No words in word bank"
+      : players.length < 3
+        ? `Need at least 3 players (${3 - players.length} more)`
+        : null;
+
+    return (
+      <PlayerSetup
+        title="SACRED IMPOSTER"
+        subtitle="A game of sacred deception"
+        players={players}
+        onPlayersChange={handlePlayersChange}
+        minPlayers={3}
+        canStart={canStart}
+        disabledReason={disabledReason}
+        onStartGame={handleStartGame}
+        settingsHref="/settings"
+      />
+    );
   }
 
   const props = {

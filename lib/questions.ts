@@ -1,4 +1,4 @@
-export const VULNERABILITY_QUESTIONS: string[] = [
+export const DEFAULT_VULNERABILITY_QUESTIONS: string[] = [
   "What's one thing you're afraid to face in your recovery?",
   "Who have you hurt the most, and what would you say to them right now?",
   "What's a lie you've told yourself to justify using?",
@@ -20,3 +20,6 @@ export const VULNERABILITY_QUESTIONS: string[] = [
   "What's a coping mechanism you're still working on letting go of?",
   "What would you tell someone who's where you were six months ago?",
 ];
+
+// Keep backward-compatible alias for existing Imposter reducer import
+export const VULNERABILITY_QUESTIONS = DEFAULT_VULNERABILITY_QUESTIONS;

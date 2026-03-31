@@ -7,30 +7,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface PlayerSetupProps {
+  title: string;
+  subtitle: string;
   players: string[];
   onPlayersChange: (players: string[]) => void;
-  wordCount: number;
+  minPlayers: number;
+  canStart: boolean;
+  disabledReason: string | null;
   onStartGame: () => void;
+  settingsHref?: string;
+  extraControls?: React.ReactNode;
 }
 
 export function PlayerSetup({
+  title,
+  subtitle,
   players,
   onPlayersChange,
-  wordCount,
+  minPlayers,
+  canStart,
+  disabledReason,
   onStartGame,
+  settingsHref,
+  extraControls,
 }: PlayerSetupProps) {
   const [newName, setNewName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const canStart = players.length >= 3 && wordCount > 0;
-
-  function getStartDisabledReason(): string | null {
-    if (wordCount === 0) return "No words in word bank";
-    if (players.length < 3)
-      return `Need at least 3 players (${3 - players.length} more)`;
-    return null;
-  }
 
   function addPlayer() {
     const trimmed = newName.trim();
@@ -65,26 +68,26 @@ export function PlayerSetup({
     }
   }
 
-  const disabledReason = getStartDisabledReason();
-
   return (
     <div className="flex flex-1 flex-col px-6 pb-8 pt-6">
       {/* Header */}
       <div className="relative flex items-center justify-center">
         <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          SACRED IMPOSTER
+          {title}
         </h1>
-        <Link
-          href="/settings"
-          className="absolute right-0 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
-        >
-          <Settings className="h-6 w-6" />
-          <span className="sr-only">Settings</span>
-        </Link>
+        {settingsHref && (
+          <Link
+            href={settingsHref}
+            className="absolute right-0 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+          >
+            <Settings className="h-6 w-6" />
+            <span className="sr-only">Settings</span>
+          </Link>
+        )}
       </div>
 
       <p className="mt-2 text-center text-muted-foreground">
-        A game of sacred deception
+        {subtitle}
       </p>
 
       {/* Player list */}
@@ -96,7 +99,7 @@ export function PlayerSetup({
         <div className="flex-1 overflow-y-auto">
           {players.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Add at least 3 players to start
+              Add at least {minPlayers} players to start
             </p>
           )}
 
@@ -151,6 +154,9 @@ export function PlayerSetup({
           )}
         </div>
       </div>
+
+      {/* Extra controls slot (e.g. prompt mode selector) */}
+      {extraControls && <div className="mt-4">{extraControls}</div>}
 
       {/* Start Game */}
       <div className="mt-6 flex flex-col items-center gap-2">
