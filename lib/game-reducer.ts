@@ -1,5 +1,3 @@
-import { VULNERABILITY_QUESTIONS } from "./questions";
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -9,22 +7,18 @@ export type GamePhase =
   | "card-reveal"
   | "word-shown"
   | "discussion"
-  | "reveal"
-  | "caught"
-  | "escaped"
-  | "pick-player";
+  | "reveal";
 
 export interface GameState {
   phase: GamePhase;
   players: string[];
+  wordBank: string[];
   word: string;
   imposterIndex: number;
+  imposterStreakCount: number;
   currentPlayerIndex: number;
   starterName: string;
-  drawnQuestion: string;
-  reDrawUsed: boolean;
   usedWordIndices: number[];
-  usedQuestionIndices: number[];
 }
 
 export type GameAction =
@@ -33,11 +27,7 @@ export type GameAction =
   | { type: "NEXT_PLAYER" }
   | { type: "START_DISCUSSION" }
   | { type: "SHOW_REVEAL" }
-  | { type: "CAUGHT" }
-  | { type: "ESCAPED" }
-  | { type: "DRAW_QUESTION" }
-  | { type: "PICK_PLAYER" }
-  | { type: "NEW_ROUND"; words: string[] }
+  | { type: "NEW_ROUND" }
   | { type: "CANCEL_GAME" };
 
 // ---------------------------------------------------------------------------
@@ -70,6 +60,30 @@ export function pickRandom(
   return { index, updatedExclude: [...exclude, index] };
 }
 
+export function pickImposter(
+  playerCount: number,
+  previousImposterIndex: number,
+  previousStreakCount: number,
+): { index: number; streakCount: number } {
+  if (playerCount <= 0) return { index: -1, streakCount: 0 };
+
+  const shouldExcludePrevious =
+    playerCount > 1 &&
+    previousImposterIndex >= 0 &&
+    previousImposterIndex < playerCount &&
+    previousStreakCount >= 2;
+
+  const available = Array.from({ length: playerCount }, (_, i) => i).filter(
+    (i) => !shouldExcludePrevious || i !== previousImposterIndex,
+  );
+
+  const index = available[Math.floor(Math.random() * available.length)];
+  const streakCount =
+    index === previousImposterIndex ? previousStreakCount + 1 : 1;
+
+  return { index, streakCount };
+}
+
 // ---------------------------------------------------------------------------
 // Initial state factory
 // ---------------------------------------------------------------------------
@@ -78,14 +92,13 @@ export function createInitialState(): GameState {
   return {
     phase: "setup",
     players: [],
+    wordBank: [],
     word: "",
     imposterIndex: -1,
+    imposterStreakCount: 0,
     currentPlayerIndex: 0,
     starterName: "",
-    drawnQuestion: "",
-    reDrawUsed: false,
     usedWordIndices: [],
-    usedQuestionIndices: [],
   };
 }
 
@@ -104,19 +117,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Pick a word, avoiding previously used indices.
       const wordPick = pickRandom(words.length, state.usedWordIndices);
 
-      // Pick the imposter (random player index).
-      const imposterIndex = Math.floor(Math.random() * players.length);
+      const imposterPick = pickImposter(players.length, -1, 0);
 
       return {
         ...state,
         phase: "card-reveal",
         players,
+        wordBank: words,
         word: words[wordPick.index],
-        imposterIndex,
+        imposterIndex: imposterPick.index,
+        imposterStreakCount: imposterPick.streakCount,
         currentPlayerIndex: 0,
         starterName: "",
-        drawnQuestion: "",
-        reDrawUsed: false,
         usedWordIndices: wordPick.updatedExclude,
       };
     }
@@ -167,80 +179,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     // -----------------------------------------------------------------------
-    // CAUGHT — the group correctly identified the imposter
-    // -----------------------------------------------------------------------
-    case "CAUGHT": {
-      const questionPick = pickRandom(
-        VULNERABILITY_QUESTIONS.length,
-        state.usedQuestionIndices,
-      );
-      return {
-        ...state,
-        phase: "caught",
-        drawnQuestion: VULNERABILITY_QUESTIONS[questionPick.index],
-        reDrawUsed: false,
-        usedQuestionIndices: questionPick.updatedExclude,
-      };
-    }
-
-    // -----------------------------------------------------------------------
-    // ESCAPED — the imposter was not caught
-    // -----------------------------------------------------------------------
-    case "ESCAPED": {
-      const questionPick = pickRandom(
-        VULNERABILITY_QUESTIONS.length,
-        state.usedQuestionIndices,
-      );
-      return {
-        ...state,
-        phase: "escaped",
-        drawnQuestion: VULNERABILITY_QUESTIONS[questionPick.index],
-        reDrawUsed: false,
-        usedQuestionIndices: questionPick.updatedExclude,
-      };
-    }
-
-    // -----------------------------------------------------------------------
-    // DRAW_QUESTION — re-draw a vulnerability question (one-time use)
-    // -----------------------------------------------------------------------
-    case "DRAW_QUESTION": {
-      const questionPick = pickRandom(
-        VULNERABILITY_QUESTIONS.length,
-        state.usedQuestionIndices,
-      );
-      return {
-        ...state,
-        drawnQuestion: VULNERABILITY_QUESTIONS[questionPick.index],
-        reDrawUsed: true,
-        usedQuestionIndices: questionPick.updatedExclude,
-      };
-    }
-
-    // -----------------------------------------------------------------------
-    // PICK_PLAYER — imposter picks who answers the question (escaped flow)
-    // -----------------------------------------------------------------------
-    case "PICK_PLAYER": {
-      return { ...state, phase: "pick-player" };
-    }
-
-    // -----------------------------------------------------------------------
     // NEW_ROUND — same players, fresh word & imposter
     // -----------------------------------------------------------------------
     case "NEW_ROUND": {
-      const { words } = action;
-
-      const wordPick = pickRandom(words.length, state.usedWordIndices);
-      const imposterIndex = Math.floor(Math.random() * state.players.length);
+      const wordPick = pickRandom(state.wordBank.length, state.usedWordIndices);
+      const imposterPick = pickImposter(
+        state.players.length,
+        state.imposterIndex,
+        state.imposterStreakCount,
+      );
 
       return {
         ...state,
         phase: "card-reveal",
-        word: words[wordPick.index],
-        imposterIndex,
+        word: state.wordBank[wordPick.index],
+        imposterIndex: imposterPick.index,
+        imposterStreakCount: imposterPick.streakCount,
         currentPlayerIndex: 0,
         starterName: "",
-        drawnQuestion: "",
-        reDrawUsed: false,
         usedWordIndices: wordPick.updatedExclude,
       };
     }

@@ -17,6 +17,8 @@ const OLD_KEYS = {
   WORDS: "sacred-imposter-words",
 } as const;
 
+const LEGACY_DEFAULT_WORD_BANK_HASH = "f5f45178";
+
 // ---------------------------------------------------------------------------
 // Migration (runs once per key on first read)
 // ---------------------------------------------------------------------------
@@ -31,6 +33,24 @@ function migrate(oldKey: string, newKey: string): void {
   }
 }
 
+function hashWordBank(words: string[]): string {
+  let hash = 2166136261;
+
+  for (const char of JSON.stringify(words)) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function isLegacyDefaultWordBank(words: string[]): boolean {
+  return (
+    words.length === 35 &&
+    hashWordBank(words) === LEGACY_DEFAULT_WORD_BANK_HASH
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Generic helpers
 // ---------------------------------------------------------------------------
@@ -42,6 +62,26 @@ function getArray<T>(key: string, defaults: T[]): T[] {
   try {
     const parsed = JSON.parse(stored);
     return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaults;
+  } catch {
+    return defaults;
+  }
+}
+
+function getStringArray(key: string, defaults: string[]): string[] {
+  if (typeof window === "undefined") return defaults;
+  const stored = localStorage.getItem(key);
+  if (!stored) return defaults;
+  try {
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return defaults;
+
+    const strings = parsed.filter(
+      (item): item is string => typeof item === "string",
+    );
+    if (strings.length === 0) return defaults;
+
+    if (strings.length !== parsed.length) saveArray(key, strings);
+    return strings;
   } catch {
     return defaults;
   }
@@ -61,7 +101,7 @@ function resetKey(key: string): void {
 
 export function getPlayers(): string[] {
   migrate(OLD_KEYS.PLAYERS, KEYS.PLAYERS);
-  return getArray(KEYS.PLAYERS, []);
+  return getStringArray(KEYS.PLAYERS, []);
 }
 
 export function savePlayers(players: string[]): void {
@@ -74,7 +114,14 @@ export function savePlayers(players: string[]): void {
 
 export function getWords(): string[] {
   migrate(OLD_KEYS.WORDS, KEYS.WORDS);
-  return getArray(KEYS.WORDS, DEFAULT_WORDS);
+  const words = getStringArray(KEYS.WORDS, DEFAULT_WORDS);
+
+  if (isLegacyDefaultWordBank(words)) {
+    saveWords(DEFAULT_WORDS);
+    return DEFAULT_WORDS;
+  }
+
+  return words;
 }
 
 export function saveWords(words: string[]): void {

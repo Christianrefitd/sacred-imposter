@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 interface GameComponentProps {
   state: GameState;
   dispatch: React.Dispatch<GameAction>;
-  words: string[];
 }
 
 export function Discussion({ state, dispatch }: GameComponentProps) {

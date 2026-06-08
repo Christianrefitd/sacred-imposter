@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 interface GameComponentProps {
   state: GameState;
   dispatch: React.Dispatch<GameAction>;
-  words: string[];
 }
 
 export function Reveal({ state, dispatch }: GameComponentProps) {
@@ -52,20 +51,12 @@ export function Reveal({ state, dispatch }: GameComponentProps) {
 
         <div className="flex flex-col gap-3 w-full mt-4">
           <Button
-            onClick={() => dispatch({ type: "CAUGHT" })}
+            onClick={() => dispatch({ type: "NEW_ROUND" })}
             variant="default"
             size="lg"
             className="w-full h-14 rounded-2xl text-lg font-semibold"
           >
-            Caught!
-          </Button>
-          <Button
-            onClick={() => dispatch({ type: "ESCAPED" })}
-            variant="outline"
-            size="lg"
-            className="w-full h-14 rounded-2xl border-destructive text-destructive text-lg font-semibold active:bg-destructive/10 transition-colors"
-          >
-            Escaped!
+            New Round
           </Button>
         </div>
       </div>
