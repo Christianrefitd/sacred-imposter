@@ -3,16 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {
-  getWords,
-  saveWords,
-  resetWords,
-  getVulnerabilityQuestions,
-  saveVulnerabilityQuestions,
-  resetVulnerabilityQuestions,
-} from "@/lib/storage";
+import { getWords, saveWords, resetWords } from "@/lib/storage";
 import { DEFAULT_WORDS } from "@/lib/words";
-import { DEFAULT_VULNERABILITY_QUESTIONS } from "@/lib/questions";
 import {
   getPrompts,
   savePrompts,
@@ -37,7 +29,6 @@ const CATEGORY_LABELS: Record<PromptCategory, string> = {
 
 export default function SettingsPage() {
   const [words, setWords] = useState<string[]>([]);
-  const [questions, setQuestions] = useState<string[]>([]);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [newPromptCategory, setNewPromptCategory] =
     useState<PromptCategory>("self-reflection");
@@ -45,7 +36,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setWords(getWords());
-    setQuestions(getVulnerabilityQuestions());
     setPrompts(getPrompts());
     setMounted(true);
   }, []);
@@ -69,28 +59,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="mt-8 flex flex-col gap-10">
-        {/* Vulnerability Questions */}
-        <ListManager
-          title="Vulnerability Questions"
-          items={questions}
-          placeholder="Add a question..."
-          onAdd={(item) => {
-            const updated = [...questions, item];
-            setQuestions(updated);
-            saveVulnerabilityQuestions(updated);
-          }}
-          onRemove={(index) => {
-            if (questions.length <= 1) return;
-            const updated = questions.filter((_, i) => i !== index);
-            setQuestions(updated);
-            saveVulnerabilityQuestions(updated);
-          }}
-          onReset={() => {
-            resetVulnerabilityQuestions();
-            setQuestions(DEFAULT_VULNERABILITY_QUESTIONS);
-          }}
-        />
-
         {/* Imposter Word Bank */}
         <ListManager
           title="Imposter Word Bank"

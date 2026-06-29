@@ -1,4 +1,3 @@
-import { pickRandom } from "./game-reducer";
 import type { Prompt, PromptCategory } from "./prompts";
 
 // ---------------------------------------------------------------------------
@@ -13,8 +12,7 @@ export type LieDetectorPhase =
   | "voting"
   | "vote-complete"
   | "caught"
-  | "fooled"
-  | "pick-player";
+  | "fooled";
 
 export interface LieDetectorState {
   phase: LieDetectorPhase;
@@ -29,25 +27,20 @@ export interface LieDetectorState {
   votes: number[]; // each entry is the storyteller index the detector voted for
   result: "caught" | "fooled" | null;
   voteCounts: Record<number, number>;
-  drawnQuestion: string;
-  reDrawUsed: boolean;
   usedPromptIndices: number[];
-  usedQuestionIndices: number[];
 }
 
 export type PromptMode = "random" | PromptCategory;
 
 export type LieDetectorAction =
-  | { type: "START_GAME"; players: string[]; prompts: Prompt[]; questions: string[]; promptMode: PromptMode }
+  | { type: "START_GAME"; players: string[]; prompts: Prompt[]; promptMode: PromptMode }
   | { type: "REVEAL_ROLE" }
   | { type: "NEXT_PLAYER" }
   | { type: "START_STORYTELLING" }
   | { type: "START_VOTING" }
   | { type: "CAST_VOTE"; votedForIndex: number }
-  | { type: "SHOW_RESULTS"; questions: string[] }
-  | { type: "DRAW_QUESTION"; questions: string[] }
-  | { type: "PICK_PLAYER" }
-  | { type: "NEW_ROUND"; prompts: Prompt[]; questions: string[]; promptMode: PromptMode }
+  | { type: "SHOW_RESULTS" }
+  | { type: "NEW_ROUND"; prompts: Prompt[]; promptMode: PromptMode }
   | { type: "CANCEL_GAME" };
 
 // ---------------------------------------------------------------------------
@@ -68,11 +61,7 @@ function pickPrompt(
   mode: PromptMode,
   usedIndices: number[],
 ): { prompt: Prompt; updatedUsed: number[] } {
-  const pool = mode === "random"
-    ? prompts
-    : prompts.filter((p) => p.category === mode);
-
-  // Map filtered pool back to indices in the full array
+  // Map the (optionally category-filtered) pool back to indices in the full array
   const poolIndices = prompts
     .map((p, i) => ({ p, i }))
     .filter(({ p }) => mode === "random" || p.category === mode)
@@ -139,10 +128,7 @@ export function createInitialState(): LieDetectorState {
     votes: [],
     result: null,
     voteCounts: {},
-    drawnQuestion: "",
-    reDrawUsed: false,
     usedPromptIndices: [],
-    usedQuestionIndices: [],
   };
 }
 
@@ -156,7 +142,7 @@ export function lieDetectorReducer(
 ): LieDetectorState {
   switch (action.type) {
     case "START_GAME": {
-      const { players, prompts, questions, promptMode } = action;
+      const { players, prompts, promptMode } = action;
       const { truthTellerIndex, liarIndices } = assignRoles(players.length);
       const { prompt, updatedUsed } = pickPrompt(prompts, promptMode, state.usedPromptIndices);
 
@@ -174,8 +160,6 @@ export function lieDetectorReducer(
         votes: [],
         result: null,
         voteCounts: {},
-        drawnQuestion: "",
-        reDrawUsed: false,
         usedPromptIndices: updatedUsed,
       };
     }
@@ -236,33 +220,14 @@ export function lieDetectorReducer(
     }
 
     case "SHOW_RESULTS": {
-      const { questions } = action;
-      const questionPick = pickRandom(questions.length, state.usedQuestionIndices);
       return {
         ...state,
         phase: state.result ?? "caught",
-        drawnQuestion: questions[questionPick.index],
-        reDrawUsed: false,
-        usedQuestionIndices: questionPick.updatedExclude,
       };
     }
-
-    case "DRAW_QUESTION": {
-      const { questions } = action;
-      const questionPick = pickRandom(questions.length, state.usedQuestionIndices);
-      return {
-        ...state,
-        drawnQuestion: questions[questionPick.index],
-        reDrawUsed: true,
-        usedQuestionIndices: questionPick.updatedExclude,
-      };
-    }
-
-    case "PICK_PLAYER":
-      return { ...state, phase: "pick-player" };
 
     case "NEW_ROUND": {
-      const { prompts, questions, promptMode } = action;
+      const { prompts, promptMode } = action;
       const { truthTellerIndex, liarIndices } = assignRoles(state.players.length);
       const { prompt, updatedUsed } = pickPrompt(prompts, promptMode, state.usedPromptIndices);
 
@@ -278,8 +243,6 @@ export function lieDetectorReducer(
         votes: [],
         result: null,
         voteCounts: {},
-        drawnQuestion: "",
-        reDrawUsed: false,
         usedPromptIndices: updatedUsed,
       };
     }
@@ -287,9 +250,8 @@ export function lieDetectorReducer(
     case "CANCEL_GAME":
       return {
         ...createInitialState(),
-        // Preserve session tracking so prompts/questions don't repeat after cancel
+        // Preserve prompt tracking so prompts don't repeat after a cancel.
         usedPromptIndices: state.usedPromptIndices,
-        usedQuestionIndices: state.usedQuestionIndices,
       };
 
     default:

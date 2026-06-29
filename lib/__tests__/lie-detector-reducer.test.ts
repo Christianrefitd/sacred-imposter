@@ -3,14 +3,11 @@ import {
   lieDetectorReducer,
   createInitialState,
   type LieDetectorState,
-  type LieDetectorAction,
 } from "../lie-detector-reducer";
 import { DEFAULT_PROMPTS } from "../prompts";
-import { DEFAULT_VULNERABILITY_QUESTIONS } from "../questions";
 
 const TEST_PLAYERS = ["Marcus", "James", "Devon", "Ty", "Rob"];
 const TEST_PROMPTS = DEFAULT_PROMPTS;
-const TEST_QUESTIONS = DEFAULT_VULNERABILITY_QUESTIONS;
 
 function startGame(state?: LieDetectorState): LieDetectorState {
   const s = state ?? createInitialState();
@@ -18,7 +15,6 @@ function startGame(state?: LieDetectorState): LieDetectorState {
     type: "START_GAME",
     players: TEST_PLAYERS,
     prompts: TEST_PROMPTS,
-    questions: TEST_QUESTIONS,
     promptMode: "random",
   });
 }
@@ -41,7 +37,6 @@ describe("START_GAME", () => {
       type: "START_GAME",
       players: ["A", "B", "C", "D", "E", "F", "G"],
       prompts: TEST_PROMPTS,
-      questions: TEST_QUESTIONS,
       promptMode: "random",
     });
     expect(state.liarIndices.length).toBe(2);
@@ -53,7 +48,6 @@ describe("START_GAME", () => {
       type: "START_GAME",
       players: TEST_PLAYERS,
       prompts: TEST_PROMPTS,
-      questions: TEST_QUESTIONS,
       promptMode: "lighter",
     });
     expect(state.prompt.category).toBe("lighter");
@@ -105,10 +99,6 @@ describe("voting", () => {
 
   it("CAST_VOTE records vote and advances voter", () => {
     let state = getToVoting();
-    const detectorIndices = state.players
-      .map((_, i) => i)
-      .filter((i) => i !== state.truthTellerIndex && !state.liarIndices.includes(i));
-
     state = lieDetectorReducer(state, {
       type: "CAST_VOTE",
       votedForIndex: state.truthTellerIndex,
@@ -142,7 +132,6 @@ describe("voting", () => {
       type: "START_GAME",
       players: ["A", "B", "C", "D", "E", "F"],
       prompts: TEST_PROMPTS,
-      questions: TEST_QUESTIONS,
       promptMode: "random",
     });
     state = lieDetectorReducer(state, { type: "START_STORYTELLING" });
@@ -179,43 +168,24 @@ describe("results flow", () => {
     return state;
   }
 
-  it("SHOW_RESULTS transitions to caught with vulnerability question", () => {
+  it("SHOW_RESULTS transitions to the caught phase", () => {
     let state = getToVoteComplete("caught");
-    state = lieDetectorReducer(state, { type: "SHOW_RESULTS", questions: TEST_QUESTIONS });
+    state = lieDetectorReducer(state, { type: "SHOW_RESULTS" });
     expect(state.phase).toBe("caught");
-    expect(state.drawnQuestion.length).toBeGreaterThan(0);
-    expect(state.reDrawUsed).toBe(false);
   });
 
-  it("SHOW_RESULTS transitions to fooled with vulnerability question", () => {
+  it("SHOW_RESULTS transitions to the fooled phase", () => {
     let state = getToVoteComplete("fooled");
-    state = lieDetectorReducer(state, { type: "SHOW_RESULTS", questions: TEST_QUESTIONS });
+    state = lieDetectorReducer(state, { type: "SHOW_RESULTS" });
     expect(state.phase).toBe("fooled");
-    expect(state.drawnQuestion.length).toBeGreaterThan(0);
-  });
-
-  it("DRAW_QUESTION re-draws and sets reDrawUsed", () => {
-    let state = getToVoteComplete("caught");
-    state = lieDetectorReducer(state, { type: "SHOW_RESULTS", questions: TEST_QUESTIONS });
-    const firstQ = state.drawnQuestion;
-    state = lieDetectorReducer(state, { type: "DRAW_QUESTION", questions: TEST_QUESTIONS });
-    expect(state.reDrawUsed).toBe(true);
-  });
-
-  it("PICK_PLAYER transitions to pick-player phase", () => {
-    let state = getToVoteComplete("fooled");
-    state = lieDetectorReducer(state, { type: "SHOW_RESULTS", questions: TEST_QUESTIONS });
-    state = lieDetectorReducer(state, { type: "PICK_PLAYER" });
-    expect(state.phase).toBe("pick-player");
   });
 
   it("NEW_ROUND resets for a new round", () => {
     let state = getToVoteComplete("caught");
-    state = lieDetectorReducer(state, { type: "SHOW_RESULTS", questions: TEST_QUESTIONS });
+    state = lieDetectorReducer(state, { type: "SHOW_RESULTS" });
     state = lieDetectorReducer(state, {
       type: "NEW_ROUND",
       prompts: TEST_PROMPTS,
-      questions: TEST_QUESTIONS,
       promptMode: "random",
     });
     expect(state.phase).toBe("role-reveal");
