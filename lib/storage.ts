@@ -1,5 +1,4 @@
 import { DEFAULT_WORDS } from "./words";
-import { DEFAULT_VULNERABILITY_QUESTIONS } from "./questions";
 
 // ---------------------------------------------------------------------------
 // Keys
@@ -8,7 +7,6 @@ import { DEFAULT_VULNERABILITY_QUESTIONS } from "./questions";
 const KEYS = {
   PLAYERS: "rc-player-names",
   WORDS: "rc-imposter-words",
-  VULNERABILITY_QUESTIONS: "rc-vulnerability-questions",
   LIE_DETECTOR_PROMPTS: "rc-lie-detector-prompts",
 } as const;
 
@@ -17,7 +15,17 @@ const OLD_KEYS = {
   WORDS: "sacred-imposter-words",
 } as const;
 
-const LEGACY_DEFAULT_WORD_BANK_HASH = "f5f45178";
+// Fingerprints of every DEFAULT_WORDS bank we have ever shipped. A stored bank
+// that still matches one of these was never edited by the user, so it is safe
+// to silently upgrade it to the current DEFAULT_WORDS. A bank the user has
+// customised won't match and is left alone.
+const LEGACY_DEFAULT_WORD_BANK_HASHES: ReadonlyArray<{
+  length: number;
+  hash: string;
+}> = [
+  { length: 35, hash: "f5f45178" }, // original recovery-themed bank
+  { length: 81, hash: "bbec4fd7" }, // second bank (airport…wildcard)
+];
 
 // ---------------------------------------------------------------------------
 // Migration (runs once per key on first read)
@@ -45,27 +53,15 @@ function hashWordBank(words: string[]): string {
 }
 
 function isLegacyDefaultWordBank(words: string[]): boolean {
-  return (
-    words.length === 35 &&
-    hashWordBank(words) === LEGACY_DEFAULT_WORD_BANK_HASH
+  const hash = hashWordBank(words);
+  return LEGACY_DEFAULT_WORD_BANK_HASHES.some(
+    (bank) => bank.length === words.length && bank.hash === hash,
   );
 }
 
 // ---------------------------------------------------------------------------
 // Generic helpers
 // ---------------------------------------------------------------------------
-
-function getArray<T>(key: string, defaults: T[]): T[] {
-  if (typeof window === "undefined") return defaults;
-  const stored = localStorage.getItem(key);
-  if (!stored) return defaults;
-  try {
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaults;
-  } catch {
-    return defaults;
-  }
-}
 
 function getStringArray(key: string, defaults: string[]): string[] {
   if (typeof window === "undefined") return defaults;
@@ -133,17 +129,39 @@ export function resetWords(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Vulnerability Questions (shared across all games)
+// Words used this session (imposter)
+//
+// Tracked in sessionStorage so a word is never repeated for the whole sitting —
+// across rounds AND across separate games in the same tab — not just within a
+// single game's reducer state. It clears automatically when the tab/window is
+// closed, which starts a fresh session next time.
 // ---------------------------------------------------------------------------
 
-export function getVulnerabilityQuestions(): string[] {
-  return getArray(KEYS.VULNERABILITY_QUESTIONS, DEFAULT_VULNERABILITY_QUESTIONS);
+const SESSION_USED_WORDS_KEY = "rc-imposter-used-words";
+
+export function getUsedWords(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = sessionStorage.getItem(SESSION_USED_WORDS_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is string => typeof item === "string");
+  } catch {
+    return [];
+  }
 }
 
-export function saveVulnerabilityQuestions(questions: string[]): void {
-  saveArray(KEYS.VULNERABILITY_QUESTIONS, questions);
+export function saveUsedWords(words: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(SESSION_USED_WORDS_KEY, JSON.stringify(words));
+  } catch {
+    // sessionStorage may be unavailable (private mode / quota) — non-fatal.
+  }
 }
 
-export function resetVulnerabilityQuestions(): void {
-  resetKey(KEYS.VULNERABILITY_QUESTIONS);
+export function resetUsedWords(): void {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(SESSION_USED_WORDS_KEY);
 }

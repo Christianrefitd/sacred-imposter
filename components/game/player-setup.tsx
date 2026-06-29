@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Settings, X, UserPlus } from "lucide-react";
+import { Settings, X, UserPlus, ChevronUp, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,14 @@ export function PlayerSetup({
     onPlayersChange(players.filter((_, i) => i !== index));
   }
 
+  function movePlayer(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= players.length) return;
+    const updated = [...players];
+    [updated[index], updated[target]] = [updated[target], updated[index]];
+    onPlayersChange(updated);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -107,14 +115,30 @@ export function PlayerSetup({
             {players.map((player, index) => (
               <li
                 key={`${player}-${index}`}
-                className="flex items-center justify-between rounded-lg bg-card px-4 py-3"
+                className="flex items-center gap-1 rounded-lg bg-card py-2 pl-4 pr-2"
               >
-                <span className="text-base font-medium text-foreground">
+                <span className="flex-1 truncate text-base font-medium text-foreground">
                   {player}
                 </span>
                 <button
+                  onClick={() => movePlayer(index, -1)}
+                  disabled={index === 0}
+                  className="flex h-11 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-25"
+                  aria-label={`Move ${player} up`}
+                >
+                  <ChevronUp className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => movePlayer(index, 1)}
+                  disabled={index === players.length - 1}
+                  className="flex h-11 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-25"
+                  aria-label={`Move ${player} down`}
+                >
+                  <ChevronDown className="h-5 w-5" />
+                </button>
+                <button
                   onClick={() => removePlayer(index)}
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive"
+                  className="flex h-11 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive"
                   aria-label={`Remove ${player}`}
                 >
                   <X className="h-5 w-5" />

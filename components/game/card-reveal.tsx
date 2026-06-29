@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { GameState, GameAction } from "@/lib/game-reducer";
+import { getWordDescription } from "@/lib/words";
 import { Button } from "@/components/ui/button";
 
 interface GameComponentProps {
@@ -15,6 +16,7 @@ export function CardReveal({ state, dispatch }: GameComponentProps) {
   const isImposter = state.currentPlayerIndex === state.imposterIndex;
   const isLastPlayer =
     state.currentPlayerIndex === state.players.length - 1;
+  const wordDescription = getWordDescription(state.word);
 
   function handleCancel() {
     dispatch({ type: "CANCEL_GAME" });
@@ -95,6 +97,11 @@ export function CardReveal({ state, dispatch }: GameComponentProps) {
           <h1 className="mb-4 text-center text-5xl font-extrabold tracking-tight text-primary sm:text-6xl">
             {state.word}
           </h1>
+          {wordDescription && (
+            <p className="mb-6 max-w-sm text-center text-base leading-relaxed text-muted-foreground">
+              {wordDescription}
+            </p>
+          )}
           <p className="mb-10 text-center text-lg text-muted-foreground">
             Remember it. Don&apos;t say it out loud.
           </p>

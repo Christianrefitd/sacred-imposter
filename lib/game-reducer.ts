@@ -18,11 +18,18 @@ export interface GameState {
   imposterStreakCount: number;
   currentPlayerIndex: number;
   starterName: string;
-  usedWordIndices: number[];
+  /** Words already shown this session, by value — never repeated. */
+  usedWords: string[];
 }
 
 export type GameAction =
-  | { type: "START_GAME"; players: string[]; words: string[] }
+  | {
+      type: "START_GAME";
+      players: string[];
+      words: string[];
+      /** Words already used earlier this session (persisted across games). */
+      usedWords?: string[];
+    }
   | { type: "REVEAL_WORD" }
   | { type: "NEXT_PLAYER" }
   | { type: "START_DISCUSSION" }
@@ -51,13 +58,45 @@ export function pickRandom(
   );
 
   if (available.length === 0) {
-    // All indices exhausted — reset and pick from the full pool.
-    const index = Math.floor(Math.random() * length);
+    // All indices exhausted — reset, but never immediately repeat the most
+    // recent pick (the last entry in `exclude`).
+    const lastIndex = exclude[exclude.length - 1];
+    const pool = Array.from({ length }, (_, i) => i).filter(
+      (i) => length <= 1 || i !== lastIndex,
+    );
+    const index = pool[Math.floor(Math.random() * pool.length)];
     return { index, updatedExclude: [index] };
   }
 
   const index = available[Math.floor(Math.random() * available.length)];
   return { index, updatedExclude: [...exclude, index] };
+}
+
+/**
+ * Pick a word that has NOT been used this session, by value.
+ *
+ * Dedupe is by string (not index) so it stays correct even if the word bank
+ * changes between games in the same session. When every word has been used the
+ * pool resets, but the word just shown is never picked again immediately.
+ * Callers MUST persist the returned `updatedUsed` so the session history grows.
+ */
+export function pickWord(
+  words: string[],
+  usedWords: string[],
+): { word: string; updatedUsed: string[] } {
+  const available = words.filter((w) => !usedWords.includes(w));
+
+  if (available.length === 0) {
+    // Whole session pool exhausted — reset, avoiding an immediate repeat.
+    const lastWord = usedWords[usedWords.length - 1];
+    const pool =
+      words.length > 1 ? words.filter((w) => w !== lastWord) : words;
+    const word = pool[Math.floor(Math.random() * pool.length)];
+    return { word, updatedUsed: [word] };
+  }
+
+  const word = available[Math.floor(Math.random() * available.length)];
+  return { word, updatedUsed: [...usedWords, word] };
 }
 
 export function pickImposter(
@@ -98,7 +137,7 @@ export function createInitialState(): GameState {
     imposterStreakCount: 0,
     currentPlayerIndex: 0,
     starterName: "",
-    usedWordIndices: [],
+    usedWords: [],
   };
 }
 
@@ -114,8 +153,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "START_GAME": {
       const { players, words } = action;
 
-      // Pick a word, avoiding previously used indices.
-      const wordPick = pickRandom(words.length, state.usedWordIndices);
+      // Seed from words already shown earlier this session so repeats are
+      // avoided across separate games, not just within one game's rounds.
+      const wordPick = pickWord(words, action.usedWords ?? []);
 
       const imposterPick = pickImposter(players.length, -1, 0);
 
@@ -124,12 +164,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         phase: "card-reveal",
         players,
         wordBank: words,
-        word: words[wordPick.index],
+        word: wordPick.word,
         imposterIndex: imposterPick.index,
         imposterStreakCount: imposterPick.streakCount,
         currentPlayerIndex: 0,
         starterName: "",
-        usedWordIndices: wordPick.updatedExclude,
+        usedWords: wordPick.updatedUsed,
       };
     }
 
@@ -182,7 +222,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     // NEW_ROUND — same players, fresh word & imposter
     // -----------------------------------------------------------------------
     case "NEW_ROUND": {
-      const wordPick = pickRandom(state.wordBank.length, state.usedWordIndices);
+      const wordPick = pickWord(state.wordBank, state.usedWords);
       const imposterPick = pickImposter(
         state.players.length,
         state.imposterIndex,
@@ -192,12 +232,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         phase: "card-reveal",
-        word: state.wordBank[wordPick.index],
+        word: wordPick.word,
         imposterIndex: imposterPick.index,
         imposterStreakCount: imposterPick.streakCount,
         currentPlayerIndex: 0,
         starterName: "",
-        usedWordIndices: wordPick.updatedExclude,
+        usedWords: wordPick.updatedUsed,
       };
     }
 

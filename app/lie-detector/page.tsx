@@ -6,7 +6,7 @@ import {
   createInitialState,
   type PromptMode,
 } from "@/lib/lie-detector-reducer";
-import { getPlayers, savePlayers, getVulnerabilityQuestions } from "@/lib/storage";
+import { getPlayers, savePlayers } from "@/lib/storage";
 import { getPrompts } from "@/lib/prompts";
 import { PlayerSetup } from "@/components/game/player-setup";
 import { RoleReveal } from "@/components/lie-detector/role-reveal";
@@ -21,7 +21,6 @@ export default function LieDetectorPage() {
   const [players, setPlayers] = useState<string[]>([]);
   const [promptMode, setPromptMode] = useState<PromptMode>("random");
   const promptsRef = useRef(getPrompts());
-  const questionsRef = useRef<string[]>([]);
   const [state, dispatch] = useReducer(
     lieDetectorReducer,
     undefined,
@@ -31,7 +30,6 @@ export default function LieDetectorPage() {
   useEffect(() => {
     setPlayers(getPlayers());
     promptsRef.current = getPrompts();
-    questionsRef.current = getVulnerabilityQuestions();
     setMounted(true);
   }, []);
 
@@ -43,12 +41,10 @@ export default function LieDetectorPage() {
   function handleStartGame() {
     savePlayers(players);
     promptsRef.current = getPrompts();
-    questionsRef.current = getVulnerabilityQuestions();
     dispatch({
       type: "START_GAME",
       players,
       prompts: promptsRef.current,
-      questions: questionsRef.current,
       promptMode,
     });
     setSetupComplete(true);
@@ -108,9 +104,7 @@ export default function LieDetectorPage() {
       ? "role-reveal"
       : state.phase === "vote-complete"
         ? "voting"
-        : state.phase === "pick-player"
-          ? "fooled"
-          : state.phase;
+        : state.phase;
 
   let content: React.ReactNode = null;
   switch (state.phase) {
@@ -123,17 +117,15 @@ export default function LieDetectorPage() {
       break;
     case "voting":
     case "vote-complete":
-      content = <Voting state={state} dispatch={dispatch} questions={questionsRef.current} />;
+      content = <Voting state={state} dispatch={dispatch} />;
       break;
     case "caught":
     case "fooled":
-    case "pick-player":
       content = (
         <Results
           state={state}
           dispatch={dispatch}
           prompts={promptsRef.current}
-          questions={questionsRef.current}
           promptMode={promptMode}
         />
       );

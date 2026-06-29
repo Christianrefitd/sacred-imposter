@@ -1,8 +1,14 @@
 "use client";
 
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { gameReducer, createInitialState } from "@/lib/game-reducer";
-import { getPlayers, savePlayers, getWords } from "@/lib/storage";
+import {
+  getPlayers,
+  savePlayers,
+  getWords,
+  getUsedWords,
+  saveUsedWords,
+} from "@/lib/storage";
 import { PlayerSetup } from "@/components/game/player-setup";
 import { CardReveal } from "@/components/game/card-reveal";
 import { Discussion } from "@/components/game/discussion";
@@ -18,6 +24,14 @@ export default function ImposterPage() {
     createInitialState,
   );
 
+  // Persist every word shown this session so it is never repeated — across
+  // rounds and across separate games — until the whole bank is exhausted.
+  useEffect(() => {
+    if (state.usedWords.length > 0) {
+      saveUsedWords(state.usedWords);
+    }
+  }, [state.usedWords]);
+
   function handlePlayersChange(updated: string[]) {
     setPlayers(updated);
     savePlayers(updated);
@@ -27,7 +41,7 @@ export default function ImposterPage() {
     savePlayers(players);
     const words = getWords();
     setWordCount(words.length);
-    dispatch({ type: "START_GAME", players, words });
+    dispatch({ type: "START_GAME", players, words, usedWords: getUsedWords() });
     setSetupComplete(true);
   }
 

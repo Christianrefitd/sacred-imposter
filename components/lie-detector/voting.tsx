@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 interface VotingProps {
   state: LieDetectorState;
   dispatch: React.Dispatch<LieDetectorAction>;
-  questions: string[];
 }
 
-export function Voting({ state, dispatch, questions }: VotingProps) {
+export function Voting({ state, dispatch }: VotingProps) {
   const [showVoteScreen, setShowVoteScreen] = useState(false);
 
   // ---------------------------------------------------------------------------
@@ -26,9 +25,7 @@ export function Voting({ state, dispatch, questions }: VotingProps) {
           The moment of truth...
         </h1>
         <Button
-          onClick={() =>
-            dispatch({ type: "SHOW_RESULTS", questions })
-          }
+          onClick={() => dispatch({ type: "SHOW_RESULTS" })}
           className="h-14 w-full max-w-xs rounded-2xl text-lg font-semibold"
         >
           Reveal Truth
